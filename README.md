@@ -14,7 +14,7 @@
 </p>
 
 ### 简介
-[node-server](https://github.com/gmingchen/node-server)主要目的在于学习使用 __`node`__ 写后端服务，是基于 ___`koa2`___ 、 ___`koa-router`___ 、 ___`mysql`___ 等实现的后端服务。并使用 ___`gulp`___ 和 ___`gulp-nodemon`___ 实现了热加载功能。内置了单表的增删改查的例子，启动服务后访问 http://localhost:8000/pages 即可查看。
+[node-server](https://github.com/gmingchen/node-server)主要目的在于学习使用 __`node`__ 写后端服务，是基于 ___`koa2`___ 、 ___`koa-router`___ 、 ___`mysql`___ 等实现的后端服务。并使用 ___`gulp`___ 和 ___`gulp-nodemon`___ 实现了热加载功能。后续还会加入参数验证等功能，持续更新。内置了单表的增删改查的例子，启动服务后访问 http://localhost:8000/pages 即可查看。
 
 <img src="http://oss.gumingchen.icu/image/node-server-demo.jpg">
 

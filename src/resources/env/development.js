@@ -5,11 +5,11 @@ module.exports = {
     contextPath: '/slipper'
   },
   database: {
-    ip: '139.196.182.46',
+    ip: 'localhost',
     port: 3306,
     name: 'node-server',
     username: 'root',
-    password: 'll5271211314',
+    password: 'root',
   },
   file: {
     path: '/src/resources/static/files',
