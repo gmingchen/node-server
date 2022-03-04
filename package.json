@@ -1,0 +1,37 @@
+{
+  "name": "node-server",
+  "version": "1.0.0",
+  "description": "node 后端服务",
+  "main": "./src/application.js",
+  "scripts": {
+    "hot": "gulp",
+    "dev": "cross-env NODE_ENV=development node ./src/application.js",
+    "prod": "cross-env NODE_ENV=production node ./src/application.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gmingchen/node-server.git"
+  },
+  "author": "gumingchen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gmingchen/node-server/issues"
+  },
+  "homepage": "https://github.com/gmingchen/node-server#readme",
+  "dependencies": {
+    "cross-env": "^7.0.3",
+    "koa": "^2.13.4",
+    "koa-body": "^4.2.0",
+    "koa-bodyparser": "^4.3.0",
+    "koa-router": "^10.1.1",
+    "koa-static": "^5.0.0",
+    "koa2-cors": "^2.0.6",
+    "mysql": "^2.18.1",
+    "require-all": "^3.0.0"
+  },
+  "devDependencies": {
+    "gulp": "^4.0.2",
+    "gulp-nodemon": "^2.5.0"
+  }
+}

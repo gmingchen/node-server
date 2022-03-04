@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>index</title>
+    <link rel="stylesheet" href="//unpkg.com/element-plus/dist/index.css" />
+    <script src="//unpkg.com/vue@next"></script>
+    <script src="//unpkg.com/element-plus"></script>
+    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+    <style>
+      #app {
+        padding: 20px;
+        margin: auto;
+        width: 80%;
+      }
+      .table, .page, .image {
+        margin-top: 20px;
+      }
+      .page {
+        justify-content: center;
+      }
+      .image {
+        display: flex;
+      }
+      .image > div {
+        flex: 1;
+        text-align: center;
+      }
+      .image > div .el-image__inner {
+        width: 200px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <el-form v-model="searchForm" :inline="true">
+        <el-form-item label="用户名：">
+          <el-input v-model="searchForm.username" />
+        </el-form-item>
+        <el-form-item label="昵称：">
+          <el-input v-model="searchForm.nickname" />
+        </el-form-item>
+        <el-form-item>
+          <el-button @click="searchHandle">搜索</el-button>
+          <el-button @click="resetHandle">重置</el-button>
+          <el-button @click="deleteHandle()" type="danger" :disabled="selection.length === 0">批量删除</el-button>
+        </el-form-item>
+      </el-form>
+      <el-button type="primary" @click="addEditHandle()">新增</el-button>
+      <el-table
+        class="table"
+        ref="refTable"
+        v-loading="tableLoading"
+        :border="true"
+        :data="list"
+        @selection-change="selectionChange">
+        <el-table-column align="center" type="selection" width="55"></el-table-column>
+        <el-table-column align="center" prop="username" label="用户名"></el-table-column>
+        <el-table-column align="center" prop="password" label="密码"></el-table-column>
+        <el-table-column align="center" prop="nickname" label="昵称"></el-table-column>
+        <el-table-column align="center" prop="mobile" label="手机号"></el-table-column>
+        <el-table-column align="center" prop="email" label="邮箱"></el-table-column>
+        <el-table-column align="center" prop="sex" label="性别">
+          <template v-slot="{row}">
+            <span v-if="row.sex === 0">女</span>
+            <span v-if="row.sex === 1">男</span>
+            <span v-if="row.sex === 2">未知</span>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" prop="created_at" label="创建时间" width="170"></el-table-column>
+        <el-table-column align="center" label="操作" width="100">
+          <template v-slot="{row}">
+            <el-button type="text" @click="addEditHandle(row.id)">编辑</el-button>
+            <el-button type="text" @click="deleteHandle(row.id)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-pagination
+        class="page"
+        v-model:currentPage="page.current"
+        v-model:page-size="page.size"
+        :page-sizes="[5, 10, 20, 30, 40, 50]"
+        :total="page.total"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="sizeChangeHandle"
+        @current-change="currentChangeHandle"
+        background>
+      </el-pagination>
+      <div class="image">
+        <div v-for="(item, index) in images" :key="index">
+          <P>{{item.title}}</P>
+          <el-image
+            :src="item.url"
+            :preview-src-list="[item.url]"
+            fit="cover">
+          </el-image>
+        </div>
+      </div>
+      <el-dialog
+        v-model="visible"
+        :title="!form.id ? '新增' : '编辑'"
+        width="40%"
+        @closed="closeHandle">
+        <el-form
+          :model="form"
+          :rules="rules"
+          v-loading="loading"
+          ref="refForm"
+          label-width="90px">
+          <el-row>
+            <el-col :span="12">
+              <el-form-item label="用户名：" prop="username">
+                <el-input v-model="form.username" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="密码：" prop="password">
+                <el-input v-model="form.password" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="12">
+              <el-form-item label="昵称：" prop="nickname">
+                <el-input v-model="form.nickname" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="手机号：" prop="mobile">
+                <el-input v-model="form.mobile" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="12">
+              <el-form-item label="邮箱：" prop="email">
+                <el-input v-model="form.email" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="性别：" prop="sex">
+                <el-radio-group v-model="form.sex">
+                  <el-radio :label="0">女</el-radio>
+                  <el-radio :label="1">男</el-radio>
+                  <el-radio :label="2">未知</el-radio>
+                </el-radio-group>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
+        <template #footer>
+          <span class="dialog-footer">
+            <el-button @click="visible = false">取消</el-button>
+            <el-button type="primary" @click="submit" :disabled="loading">确认</el-button>
+          </span>
+        </template>
+      </el-dialog>
+    </div>
+  </body>
+  <script>
+    const app = Vue.createApp({
+      data() {
+        return {
+          tableLoading: false,
+          searchForm: {
+            username: '',
+            nickname: ''
+          },
+          page: {
+            current: 1,
+            size: 5,
+            total: 0
+          },
+          list: [],
+          selection: [],
+          visible: false,
+          loading: false,
+          form: {
+            id: '',
+            username: '',
+            password: '',
+            nickname: '',
+            mobile: '',
+            email: '',
+            sex: 2,
+          },
+          rules: {
+            username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+            password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+            nickname: [{ required: true, message: '请输入昵称', trigger: 'blur' }],
+            mobile: [{ required: true, message: '请输入手机号', trigger: 'blur' }],
+            email: [{ required: true, message: '请输入邮箱', trigger: 'blur' }],
+            sex: [{ required: true, message: '请选择性别', trigger: 'blur' }]
+          },
+          images: [
+            { title: '公众号', url: 'http://oss.gumingchen.icu/image/official-account-qr-code.jpg' },
+            { title: 'QQ交流群', url: 'http://oss.gumingchen.icu/image/qq-group-qr-code.jpg' },
+            { title: '微信交流群', url: 'http://oss.gumingchen.icu/image/wechat-group-qr-code.jpg?time=1' },
+            { title: '微信', url: 'http://oss.gumingchen.icu/image/wechat-qr-code-1.jpg' },
+            { title: 'QQ', url: 'http://oss.gumingchen.icu/image/qq-qr-code.jpg' },
+          ]
+        }
+      },
+      created(){
+        this.getList()
+      },
+      methods: {
+        async getList() {
+          this.tableLoading = true
+          const params = {
+            ...this.searchForm,
+            current: this.page.current,
+            size: this.page.size 
+          }
+          await axios.get('/slipper/user/page', { params }).then(r => {
+            if (r.status === 200) {
+              if (r.data.code === 0) {
+                this.list = r.data.data.list
+                this.page.total = r.data.data.total
+              }
+            }
+          })
+          this.$nextTick(() => {
+            this.tableLoading = false
+          })
+        },
+        searchHandle() {
+          this.page.current = 1
+          this.getList()
+        },
+        resetHandle() {
+          this.searchForm.username = ''
+          this.searchForm.nickname = ''
+          this.searchHandle()
+        },
+        async addEditHandle(id) {
+          this.form.id = id || ''
+          this.visible = true
+          this.loading = true
+          if (id) {
+            const params = { id }
+            await axios.get('/slipper/user/info', { params }).then(r => {
+              if (r.status === 200) {
+                if (r.data.code === 0) {
+                  this.form.username = r.data.data.username
+                  this.form.password = r.data.data.password
+                  this.form.nickname = r.data.data.nickname
+                  this.form.mobile = r.data.data.mobile
+                  this.form.email = r.data.data.email
+                  this.form.sex = r.data.data.sex
+                }
+              }
+            })
+          }
+          this.$nextTick(() => {
+            this.loading = false
+          })
+        },
+        deleteHandle(id) {
+          const ids = id ? [id] : this.selection.map(item => item.id)
+          console.log(ids);
+          this.$messageBox.confirm('确定要对此执行删除操作？', '提示', {
+            confirmButtonText: '确认',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            axios.post('/slipper/user/delete', { ids }).then(r => {
+              if (r.status === 200) {
+                if (r.data.code === 0) {
+                  this.$message.success('删除成功!')
+                  this.getList()
+                }
+              }
+            })
+          })
+        },
+        selectionChange(val) {
+          this.selection = val
+        },
+        currentChangeHandle(val) {
+          this.page.current = val
+          this.getList()
+        },
+        sizeChangeHandle(val) {
+          this.page.size = val
+          this.getList()
+        },
+        submit() {
+          this.$refs.refForm.validate(async valid => {
+            if (valid) {
+              const url = `/slipper/user/${ !this.form.id ? 'create' : 'update' }`
+              await axios.post(url, { ...this.form }).then(r => {
+                if (r.status === 200) {
+                  if (r.data.code === 0) {
+                    this.$message.success('操作成功!')
+                    this.getList()
+                    this.visible = false
+                  }
+                }
+              })
+            } else {
+              return false
+            }
+          })
+        },
+        closeHandle(){
+          this.$refs.refForm.resetFields()
+        }
+      },
+    })
+    app.use(ElementPlus)
+    app.mount('#app')
+  </script>
+</html>
